@@ -193,18 +193,20 @@
                 </button>
             </div>
             <div class="p-5 overflow-y-auto space-y-4 text-xs text-slate-300 leading-relaxed custom-scroll">
+                
+                <!-- UX 개선 1, 3: 일상적 비유 및 순화된 용어 적용 -->
                 <div>
                     <h4 class="font-bold text-cyan-400 mb-1 flex items-center gap-1">
-                        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> 1. 게임의 목표
+                        <i data-lucide="help-circle" class="w-3.5 h-3.5"></i> 1. 게임의 목표: 불 끄기!
                     </h4>
-                    <p>보드 위의 모든 타일을 숫자가 없는 <span class="font-bold text-slate-100">0: 암흑(어두운 회색)</span> 상태로 만드는 것이 클리어 조건입니다.</p>
+                    <p>켜져 있는 모든 색상 스위치를 꺼서 <span class="font-bold text-slate-100">완전한 암흑(0)</span> 상태로 만드는 것이 목표입니다.</p>
                 </div>
 
                 <div class="border-t border-slate-800/60 pt-3">
                     <h4 class="font-bold text-indigo-400 mb-1 flex items-center gap-1">
-                        <i data-lucide="repeat" class="w-3.5 h-3.5"></i> 2. Modulo 4 색상 순환
+                        <i data-lucide="repeat" class="w-3.5 h-3.5"></i> 2. 4단계 색상 릴레이
                     </h4>
-                    <p>각 타일은 0부터 3까지 숫자가 증가할 때마다 색상이 순환합니다.</p>
+                    <p>각 타일은 값이 오를 때마다 다음 4단계 색상으로 순환합니다.</p>
                     <p class="mt-1 bg-slate-950/60 p-2 rounded border border-slate-800 flex justify-between items-center font-semibold text-center text-[11px]">
                         <span class="text-slate-400">0 (암흑)</span> → 
                         <span class="text-red-400">1 (빨강)</span> → 
@@ -216,17 +218,17 @@
 
                 <div class="border-t border-slate-800/60 pt-3">
                     <h4 class="font-bold text-emerald-400 mb-1 flex items-center gap-1">
-                        <i data-lucide="user" class="w-3.5 h-3.5"></i> 3. 내 움직임의 변환 연산 (+1)
+                        <i data-lucide="user" class="w-3.5 h-3.5"></i> 3. 십자(➕) 마법! 주변이 변해요
                     </h4>
-                    <p>내가 상하좌우(WASD)로 한 칸 움직이면, <span class="text-emerald-300 font-semibold">새로 밟은 타일과 인접한 상하좌우 4칸의 값</span>이 모두 <span class="text-emerald-400 font-bold">+1</span> 증가합니다.</p>
+                    <p>상하좌우로 한 칸 이동하면, <span class="text-emerald-300 font-semibold">내가 새로 밟은 곳과 주변 상하좌우 4칸</span>의 색상이 함께 다음 단계(+1)로 변합니다.</p>
                 </div>
 
                 <div class="border-t border-slate-800/60 pt-3">
                     <h4 class="font-bold text-amber-400 mb-1 flex items-center gap-1">
                         <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 4. 점진적 난이도 상승
                     </h4>
-                    <p>초기 단계는 매우 적은 움직임으로 빠르게 룰을 익힐 수 있는 직관적인 난이도로 시작합니다.</p>
-                    <p class="mt-1">스테이지가 진행될수록 생성되는 맵의 꼬임(셔플) 횟수가 <span class="text-amber-400 font-semibold">점진적으로 증가</span>하며 더 복잡한 행렬이 생성됩니다.</p>
+                    <p>스테이지 1은 아주 쉽습니다. 힌트를 따라 가볍게 한 발짝 내디뎌 보세요!</p>
+                    <p class="mt-1">스테이지가 올라갈수록 맵의 구조가 <span class="text-amber-400 font-semibold">점진적으로 더 복잡하게</span> 얽힙니다.</p>
                 </div>
             </div>
             <div class="p-4 border-t border-slate-800 bg-slate-950/20 text-center">
@@ -344,10 +346,6 @@
             return x - Math.floor(x);
         }
 
-        // ★ 핵심 개선: 플레이어의 역행동 시뮬레이션 기반 완벽 생성 ★
-        // 맵을 무작위로 섞지 않고, 클리어 상태(모두 0)에서 시작해 
-        // 목표 난이도 횟수만큼 뒤로(역으로) 걸어가며 맵을 만들어 냅니다.
-        // 플레이어는 생성된 역경로를 그대로 따라가면 100% 클리어가 가능합니다.
         function generateSolvableGrid() {
             // 시작 상태: 모두 0 (클리어 상태)
             grid = Array.from({ length: MAP_SIZE }, () => Array(MAP_SIZE).fill(0));
@@ -367,9 +365,8 @@
                 { dx: 1, dy: 0 }   // 우
             ];
 
-            // 역방향 시뮬레이션: (목표 지점에서 역으로 움직이며 맵을 꼬기)
+            // 역방향 시뮬레이션
             for (let i = 0; i < finalShuffle; i++) {
-                // 1. 현재 위치에 플레이어 조작(+1)의 완벽한 역연산(-1 즉, Mod 4에서 +3) 적용
                 const offsets = [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]];
                 offsets.forEach(([ox, oy]) => {
                     const tx = wrapCoord(tempPX + ox);
@@ -377,17 +374,14 @@
                     grid[ty][tx] = (grid[ty][tx] + 3) % 4; // -1 효과
                 });
 
-                // 2. 무작위 방향으로 역으로 이동
                 const dirIdx = Math.floor(getSeededRandom() * directions.length);
                 const dir = directions[dirIdx];
                 tempPX = wrapCoord(tempPX + dir.dx);
                 tempPY = wrapCoord(tempPY + dir.dy);
             }
 
-            // 역이동이 끝난 이 'tempPX, tempPY'가 바로 플레이어가 게임을 시작할 위치가 됩니다!
             player = { x: tempPX, y: tempPY };
 
-            // 아주 드물게 섞였는데 제자리로 돌아와 모든 타일이 0이 되어버리는 경우 대비용 안전 장치
             if (checkVictory()) {
                 const offsets = [[0, 0], [0, -1], [0, 1], [-1, 0], [1, 0]];
                 offsets.forEach(([ox, oy]) => {
@@ -398,7 +392,6 @@
             }
         }
 
-        // 실시간 난이도 인디케이터 UI 변환
         function updateDifficultyUI() {
             let finalShuffle = Math.min(1 + Math.floor((stage - 1) / 3), 10);
             
@@ -423,16 +416,10 @@
             diffIndicator.className = `text-xs font-bold ${color}`;
         }
 
-        // === 핵심 대수 및 토러스 평면 연산 ===
-
-        // 토러스 공간 보정 (도넛형 맵 연결)
         function wrapCoord(val) {
             return (val % MAP_SIZE + MAP_SIZE) % MAP_SIZE;
         }
 
-        /**
-         * 중심 타일(cx, cy)과 인접 4칸에 덧셈/뺄셈 적용 (Torus 구조 탑재)
-         */
         function applyMatrixOperation(cx, cy, delta) {
             const offsets = [
                 [0, 0],   // 중심
@@ -454,9 +441,6 @@
             });
         }
 
-        // === 조작 핸들러 및 입력 매핑 ===
-
-        // 키보드 컨트롤 처리
         function handleKeyDown(e) {
             if (isGameOver) return;
 
@@ -491,7 +475,6 @@
             handleDirectionalInput(dx, dy);
         }
 
-        // 모바일 스와이프 제스처 핸들러
         function setupTouchEvents() {
             boardEl.addEventListener('touchstart', (e) => {
                 if (isGameOver) return;
@@ -524,30 +507,23 @@
             }, { passive: true });
         }
 
-        // 이동 및 연산 로직 루프
         function handleDirectionalInput(dx, dy) {
             if (isGameOver) return;
 
             turns++;
             turnsDisplay.textContent = turns;
 
-            // 1. 플레이어 이동
             player.x = wrapCoord(player.x + dx);
             player.y = wrapCoord(player.y + dy);
 
-            // 2. 모듈로 변환 적용
             applyMatrixOperation(player.x, player.y, 1);
-
-            // 3. 화면 갱신
             renderBoard();
 
-            // 4. 승리 판별
             if (checkVictory()) {
                 triggerVictory();
             }
         }
 
-        // 승리 검증
         function checkVictory() {
             for (let r = 0; r < MAP_SIZE; r++) {
                 for (let c = 0; c < MAP_SIZE; c++) {
@@ -557,27 +533,23 @@
             return true;
         }
 
-        // 적응형 변조 연산 및 다음 스테이지 활성화 처리
         function triggerVictory() {
             isGameOver = true;
 
             let finalShuffle = Math.min(1 + Math.floor((stage - 1) / 3), 10);
             let baseRequired = finalShuffle;
 
-            // 클리어 축하 피드백 메시지 설정
-            let perfMsg = "안정적인 수학적 평형 상태를 구현했습니다!";
+            let perfMsg = "모든 불을 성공적으로 껐습니다!";
             if (turns <= baseRequired + 2) {
                 perfMsg = "완벽한 최적의 경로로 클리어하셨습니다!";
             } else if (turns > baseRequired * 4) {
                 perfMsg = "조금 험난한 여정이었습니다. 다음 스테이지를 준비하세요!";
             }
 
-            // 고유 클리어 진척도 관리
             if (!completedStages[stage] || turns < completedStages[stage]) {
                 completedStages[stage] = turns;
             }
 
-            // 다음 스테이지 언락
             if (stage < TOTAL_STAGES && !unlockedStages.includes(stage + 1)) {
                 unlockedStages.push(stage + 1);
             }
@@ -586,22 +558,18 @@
             clearDiff.textContent = diffIndicator.textContent;
             clearPerformanceMsg.textContent = perfMsg;
 
-            // 100 스테이지 달성 시 다음 버튼 숨김
             if (stage >= TOTAL_STAGES) {
                 nextStageBtn.style.display = 'none';
             } else {
                 nextStageBtn.style.display = 'flex';
             }
 
-            // 모달 노출 애니메이션
             clearOverlay.classList.remove("hidden");
             setTimeout(() => clearOverlay.classList.remove("opacity-0"), 50);
 
-            // 스테이지 목록 데이터 재설정 (완료 상태 갱신 목적)
             renderStageSelectGrid();
         }
 
-        // === 100 스테이지 선택기 모달 설계 ===
         function setupStageSelect() {
             currentStageGroup.addEventListener('click', () => {
                 stageSelectModal.classList.remove("hidden");
@@ -615,7 +583,6 @@
             });
         }
 
-        // 100개 스테이지 그리드 카드 렌더링
         function renderStageSelectGrid() {
             stageGridContainer.innerHTML = "";
 
@@ -627,7 +594,6 @@
                 const btn = document.createElement("button");
                 btn.type = "button";
                 
-                // 스타일 기본값 분기
                 let stateClasses = "";
                 if (isCurrent) {
                     stateClasses = "bg-cyan-600 border-cyan-400 text-white font-black ring-2 ring-cyan-500/50";
@@ -641,13 +607,11 @@
 
                 btn.className = `p-2 rounded-xl border text-xs font-orbitron transition-all flex flex-col items-center justify-center gap-0.5 ${stateClasses}`;
                 
-                // 번호 레이블
                 const numSpan = document.createElement("span");
                 numSpan.textContent = i;
                 numSpan.className = "font-bold text-sm";
                 btn.appendChild(numSpan);
 
-                // 최고 점수(턴) 표시
                 if (isCompleted) {
                     const scoreSpan = document.createElement("span");
                     scoreSpan.className = "text-[7px] font-semibold text-emerald-400";
@@ -660,7 +624,6 @@
                     btn.appendChild(statusSpan);
                 }
 
-                // 이벤트 부착
                 if (isUnlocked) {
                     btn.addEventListener('click', () => {
                         stage = i;
@@ -685,14 +648,18 @@
                     const tileVal = grid[r][c];
                     
                     const tileEl = document.createElement("div");
-                    tileEl.className = `tile-transition relative rounded-2xl border flex flex-col justify-center items-center font-bold text-lg select-none ${TILE_CLASSES[tileVal]}`;
+                    
+                    // UX 개선 2: 스테이지 1이고 아직 움직이지 않았을 때, 정답 타일(정중앙 2,2)에 반짝이는 힌트 이펙트 부여
+                    const isTutorialHint = (stage === 1 && turns === 0 && r === 2 && c === 2);
+                    let extraClasses = isTutorialHint ? "ring-4 ring-yellow-400/80 animate-pulse z-10 scale-105" : "";
+
+                    tileEl.className = `tile-transition relative rounded-2xl border flex flex-col justify-center items-center font-bold text-lg select-none ${TILE_CLASSES[tileVal]} ${extraClasses}`;
                     
                     const valIndicator = document.createElement("span");
                     valIndicator.className = "text-xs opacity-35 font-orbitron";
                     valIndicator.textContent = tileVal;
                     tileEl.appendChild(valIndicator);
 
-                    // 플레이어 캐릭터 위치 처리
                     const isPlayerHere = (player.x === c && player.y === r);
 
                     if (isPlayerHere) {
@@ -709,7 +676,6 @@
                 }
             }
 
-            // 아이콘 리패치
             lucide.createIcons();
         }
 
@@ -725,18 +691,13 @@
             }
         });
 
+        // 짤려있던 모달 버튼 이벤트 완성
         openStageSelectBtn.addEventListener('click', () => {
-            // 클리어 모달 먼저 닫기
-            clearOverlay.classList.add("opacity-0");
-            setTimeout(() => {
-                clearOverlay.classList.add("hidden");
-                // 스테이지 선택 모달 띄우기
-                stageSelectModal.classList.remove("hidden");
-                setTimeout(() => stageSelectModal.classList.remove("opacity-0"), 50);
-                renderStageSelectGrid();
-            }, 300);
+            clearOverlay.classList.add("hidden", "opacity-0"); // 클리어 화면 숨기기
+            stageSelectModal.classList.remove("hidden");
+            setTimeout(() => stageSelectModal.classList.remove("opacity-0"), 50);
+            renderStageSelectGrid();
         });
-
     </script>
 </body>
 </html>
