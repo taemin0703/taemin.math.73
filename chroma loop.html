@@ -56,7 +56,7 @@
             CHROMA LOOP
         </h1>
         <p class="text-[10px] text-slate-500 mt-0.5 font-bold tracking-widest uppercase">
-            Adaptive Matrix Puzzle • 100 Stages
+            Adaptive Matrix Puzzle • All Stages Unlocked
         </p>
     </header>
 
@@ -68,7 +68,7 @@
             <div class="text-center flex-1 cursor-pointer hover:bg-slate-800/50 p-1 rounded-lg transition-all" id="current-stage-group">
                 <span class="text-[9px] text-slate-500 font-bold tracking-widest block">STAGE</span>
                 <span id="stage-display" class="text-lg font-black font-orbitron text-cyan-400">1</span>
-                <span class="text-[8px] text-slate-400 block underline font-semibold">변경하기</span>
+                <span class="text-[8px] text-slate-400 block underline font-semibold">전체 선택</span>
             </div>
             <div class="h-6 w-[1px] bg-slate-800"></div>
             <div class="text-center flex-1">
@@ -165,19 +165,18 @@
                 </button>
             </div>
             <div class="p-4 overflow-y-auto custom-scroll flex-grow">
-                <p class="text-[11px] text-slate-400 mb-3 text-center">원하는 활성화된 스테이지를 클릭해 도전하세요!</p>
+                <p class="text-[11px] text-slate-400 mb-3 text-center">모든 스테이지가 열려있습니다. 원하는 곳을 클릭하세요!</p>
                 <div id="stage-grid-container" class="grid grid-cols-5 gap-2">
                 </div>
             </div>
-            <!-- 저장 초기화 버튼 추가 -->
             <div class="p-3 border-t border-slate-800 bg-slate-950/40 flex justify-between items-center text-[10px] text-slate-500">
-                <span>진척도가 자동으로 저장됩니다.</span>
-                <button id="clear-data-btn" class="text-rose-400 hover:text-rose-300 underline font-semibold">데이터 초기화</button>
+                <span>클리어 기록은 자동으로 저장됩니다.</span>
+                <button id="clear-data-btn" class="text-rose-400 hover:text-rose-300 underline font-semibold">기록 초기화</button>
             </div>
         </div>
     </div>
 
-    <!-- 게임 가이드(도움말) 모달 -->
+    <!-- 게임 가이드 모달 -->
     <div id="guide-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 opacity-0 hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/40">
@@ -220,10 +219,9 @@
 
                 <div class="border-t border-slate-800/60 pt-3">
                     <h4 class="font-bold text-amber-400 mb-1 flex items-center gap-1">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 4. 점진적 난이도 상승
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> 4. 자유로운 스테이지 선택
                     </h4>
-                    <p>스테이지 1은 아주 쉽습니다. 힌트를 따라 가볍게 한 발짝 내디뎌 보세요!</p>
-                    <p class="mt-1">스테이지가 올라갈수록 맵의 구조가 <span class="text-amber-400 font-semibold">점진적으로 더 복잡하게</span> 얽힙니다.</p>
+                    <p>상단 <span class="text-cyan-400 font-semibold">'STAGE'</span> 영역을 눌러 원하는 난이도의 스테이지(1~100)를 언제든 바로 플레이할 수 있습니다.</p>
                 </div>
             </div>
             <div class="p-4 border-t border-slate-800 bg-slate-950/20 text-center">
@@ -252,12 +250,10 @@
         let isGameOver = false;
 
         // localStorage 저장 키 이름
-        const STORAGE_KEY_UNLOCKED = "chroma_loop_unlocked";
         const STORAGE_KEY_COMPLETED = "chroma_loop_completed";
         const STORAGE_KEY_LAST_STAGE = "chroma_loop_last_stage";
 
         // 진척도 변수
-        let unlockedStages = [1]; // 기본값: 1단계만 해금
         let completedStages = {}; // { stageNum: minTurns }
 
         // 터치 제스처용 상태 변수
@@ -301,7 +297,6 @@
         // === LocalStorage 데이터 저장 및 불러오기 ===
         function saveProgress() {
             try {
-                localStorage.setItem(STORAGE_KEY_UNLOCKED, JSON.stringify(unlockedStages));
                 localStorage.setItem(STORAGE_KEY_COMPLETED, JSON.stringify(completedStages));
                 localStorage.setItem(STORAGE_KEY_LAST_STAGE, stage.toString());
             } catch (e) {
@@ -311,15 +306,8 @@
 
         function loadProgress() {
             try {
-                const savedUnlocked = localStorage.getItem(STORAGE_KEY_UNLOCKED);
                 const savedCompleted = localStorage.getItem(STORAGE_KEY_COMPLETED);
                 const savedLastStage = localStorage.getItem(STORAGE_KEY_LAST_STAGE);
-
-                if (savedUnlocked) {
-                    unlockedStages = JSON.parse(savedUnlocked);
-                } else {
-                    unlockedStages = [1];
-                }
 
                 if (savedCompleted) {
                     completedStages = JSON.parse(savedCompleted);
@@ -332,18 +320,15 @@
                 }
             } catch (e) {
                 console.error("진척도 불러오기 실패:", e);
-                unlockedStages = [1];
                 completedStages = {};
                 stage = 1;
             }
         }
 
         function resetProgressData() {
-            if (confirm("정말로 모든 진행 기록을 초기화하시겠습니까?")) {
-                localStorage.removeItem(STORAGE_KEY_UNLOCKED);
+            if (confirm("정말로 클리어 기록을 모두 초기화하시겠습니까?")) {
                 localStorage.removeItem(STORAGE_KEY_COMPLETED);
                 localStorage.removeItem(STORAGE_KEY_LAST_STAGE);
-                unlockedStages = [1];
                 completedStages = {};
                 stage = 1;
                 initGame();
@@ -355,7 +340,7 @@
         // === 게임 초기 설정 및 구동 ===
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
-            loadProgress(); // 저장 데이터 로드
+            loadProgress();
             initGame();
             showGuide();
 
@@ -595,12 +580,6 @@
                 completedStages[stage] = turns;
             }
 
-            // 다음 스테이지 해금
-            if (stage < TOTAL_STAGES && !unlockedStages.includes(stage + 1)) {
-                unlockedStages.push(stage + 1);
-            }
-
-            // 저장
             saveProgress();
 
             clearTurns.textContent = turns;
@@ -634,11 +613,11 @@
             clearDataBtn.addEventListener('click', resetProgressData);
         }
 
+        // === 모든 스테이지 선택 및 클릭 가능 모드 ===
         function renderStageSelectGrid() {
             stageGridContainer.innerHTML = "";
 
             for (let i = 1; i <= TOTAL_STAGES; i++) {
-                const isUnlocked = unlockedStages.includes(i);
                 const isCompleted = completedStages[i] !== undefined;
                 const isCurrent = (stage === i);
 
@@ -647,13 +626,12 @@
                 
                 let stateClasses = "";
                 if (isCurrent) {
-                    stateClasses = "bg-cyan-600 border-cyan-400 text-white font-black ring-2 ring-cyan-500/50";
+                    stateClasses = "bg-cyan-600 border-cyan-400 text-white font-black ring-2 ring-cyan-500/50 shadow-lg shadow-cyan-900/40 scale-105 z-10";
                 } else if (isCompleted) {
-                    stateClasses = "bg-emerald-950/80 border-emerald-500/60 text-emerald-300 hover:bg-emerald-900";
-                } else if (isUnlocked) {
-                    stateClasses = "bg-slate-800 border-slate-700 text-slate-200 hover:bg-slate-700";
+                    stateClasses = "bg-emerald-950/80 border-emerald-500/60 text-emerald-300 hover:bg-emerald-800/80 hover:scale-105";
                 } else {
-                    stateClasses = "bg-slate-950 border-slate-900 text-slate-700 cursor-not-allowed opacity-40";
+                    // 미클리어여도 즉시 플레이 가능!
+                    stateClasses = "bg-slate-800/80 border-slate-700 text-slate-300 hover:bg-slate-700 hover:border-slate-500 hover:scale-105";
                 }
 
                 btn.className = `p-2 rounded-xl border text-xs font-orbitron transition-all flex flex-col items-center justify-center gap-0.5 ${stateClasses}`;
@@ -668,24 +646,21 @@
                     scoreSpan.className = "text-[7px] font-semibold text-emerald-400";
                     scoreSpan.textContent = `★ ${completedStages[i]}T`;
                     btn.appendChild(scoreSpan);
-                } else if (isUnlocked && !isCurrent) {
+                } else {
                     const statusSpan = document.createElement("span");
-                    statusSpan.className = "text-[7px] text-slate-500";
-                    statusSpan.textContent = "OPEN";
+                    statusSpan.className = "text-[7px] text-slate-400";
+                    statusSpan.textContent = "도전 가능";
                     btn.appendChild(statusSpan);
                 }
 
-                if (isUnlocked) {
-                    btn.addEventListener('click', () => {
-                        stage = i;
-                        saveProgress(); // 선택한 스테이지 저장
-                        initGame();
-                        stageSelectModal.classList.add("opacity-0");
-                        setTimeout(() => stageSelectModal.classList.add("hidden"), 300);
-                    });
-                } else {
-                    btn.disabled = true;
-                }
+                // 언제든지 클릭해서 이동
+                btn.addEventListener('click', () => {
+                    stage = i;
+                    saveProgress();
+                    initGame();
+                    stageSelectModal.classList.add("opacity-0");
+                    setTimeout(() => stageSelectModal.classList.add("hidden"), 300);
+                });
 
                 stageGridContainer.appendChild(btn);
             }
@@ -737,7 +712,7 @@
         nextStageBtn.addEventListener('click', () => {
             if (stage < TOTAL_STAGES) {
                 stage++;
-                saveProgress(); // 다음 스테이지로 넘어갈 때 저장
+                saveProgress();
                 initGame();
             }
         });
